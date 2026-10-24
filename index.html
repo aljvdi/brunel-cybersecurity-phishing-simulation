@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081321">
+  <meta name="description" content="An interactive phishing awareness game from Brunel Cyber Security Society. Learn to spot suspicious emails safely.">
+  <title>Spot the Phish | Brunel Cyber Security Society</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #081321;
+      --surface: #101e30;
+      --surface-2: #15273e;
+      --line: #293c54;
+      --white: #ffffff;
+      --muted: #9eafc4;
+      --yellow: #ffc338;
+      --mint: #39dfc8;
+      --pink: #fb658f;
+      --blue: #2766cc;
+      --ink: #142031;
+      --card: #fbfcff;
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behaviour: smooth; }
+    body { margin: 0; min-width: 320px; color: var(--white); background: var(--bg); font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--mint); outline-offset: 4px; }
+    a { color: inherit; }
+    .page { overflow: hidden; position: relative; min-height: 100vh; isolation: isolate; }
+    .page::before { content: ""; position: absolute; z-index: -1; top: -310px; right: -260px; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle at 45% 55%, #194588 0%, #15396f 58%, #0f2a51 100%); opacity: .8; }
+    .page::after { content: ""; position: absolute; z-index: -1; bottom: -300px; left: -330px; width: 620px; height: 620px; border-radius: 50%; background: #332149; opacity: .48; }
+    .container { width: min(1160px, calc(100% - 48px)); margin-inline: auto; }
+    .header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 30px; }
+    .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .brand-mark { display: grid; place-items: center; height: 52px; width: 52px; flex: 0 0 auto; border: 1px solid #258bf0; border-radius: 16px; background: #092547; color: #60b5ff; box-shadow: inset 0 0 0 3px rgba(39,102,204,.13); }
+    .brand-mark svg { width: 28px; height: 28px; }
+    .brand-text { display: flex; flex-direction: column; font-size: 11px; font-weight: 800; letter-spacing: .15em; line-height: 1.55; }
+    .brand-text strong { font-size: 13px; }
+    .site-link { text-decoration: none; border: 1px solid #45608c; border-radius: 999px; padding: 9px 15px; background: rgba(12,31,62,.6); font-size: 12px; letter-spacing: .07em; font-weight: 800; }
+    .site-link:hover { border-color: #81a9ee; }
+    .hero { display: flex; justify-content: space-between; align-items: end; gap: 28px; margin: 58px 0 37px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--yellow); text-transform: uppercase; font-size: 11px; letter-spacing: .19em; font-weight: 900; }
+    .eyebrow::before { content: ""; display: block; width: 8px; height: 8px; background: var(--mint); border-radius: 100%; box-shadow: 0 0 15px var(--mint); }
+    h1 { max-width: 800px; font-size: clamp(45px, 6.1vw, 76px); line-height: .98; letter-spacing: -.065em; font-weight: 900; margin: 19px 0 20px; }
+    h1 span { display: block; }
+    h1 .highlight { color: var(--yellow); }
+    .hero-description { margin: 0; color: #c6d3e4; max-width: 590px; font-size: 16px; }
+    .hero-badge { display: flex; gap: 10px; align-items: center; align-self: end; white-space: nowrap; border: 1px solid #36516f; border-radius: 100px; padding: 12px 16px; font-size: 12px; font-weight: 750; background: rgba(21,39,62,.55); }
+    .hero-badge svg { color: var(--mint); width: 17px; height: 17px; }
+    .game-layout { display: grid; grid-template-columns: 286px minmax(0, 1fr); align-items: start; gap: 20px; }
+    .sidebar { border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; background: linear-gradient(160deg, #13263e, #0d1a2b); }
+    .section-label { color: #8b9eb8; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .18em; }
+    .round-label { color: white; font-size: 27px; font-weight: 850; letter-spacing: -.04em; margin: 6px 0 16px; }
+    .progress-text { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
+    .progress-text strong { color: white; }
+    .progress-track { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 12px 0 28px; }
+    .progress-segment { height: 7px; border-radius: 99px; background: #2d3d53; }
+    .progress-segment.done { background: var(--mint); }
+    .progress-segment.missed { background: var(--pink); }
+    .progress-segment.current { background: var(--yellow); }
+    .score-card { display: flex; align-items: center; justify-content: space-between; padding: 17px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .score-card span { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .score-card strong { font-size: 31px; line-height: 1; color: var(--yellow); font-weight: 850; letter-spacing: -.04em; }
+    .tip-box { margin-top: 26px; border-radius: 15px; background: #21364e; padding: 18px; }
+    .tip-icon { display: grid; place-items: center; background: #334e61; color: var(--mint); border-radius: 11px; width: 34px; height: 34px; font-size: 19px; font-weight: 900; }
+    .tip-box h3 { margin: 12px 0 6px; font-size: 14px; font-weight: 800; }
+    .tip-box p { margin: 0; color: #c0cde0; font-size: 12px; line-height: 1.65; }
+    .game-panel { overflow: hidden; border: 1px solid #34445a; border-radius: var(--radius); background: #f8fbff; color: var(--ink); box-shadow: 0 24px 90px rgba(0,0,0,.18); }
+    .mail-toolbar { background: #eaf0f8; border-bottom: 1px solid #d9e2ee; min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 25px; }
+    .mail-brand { display: flex; align-items: center; gap: 10px; color: #263b57; font-size: 12px; letter-spacing: .03em; font-weight: 750; }
+    .mail-icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #2869ce; color: white; }
+    .mail-icon svg { width: 18px; height: 18px; }
+    .simulation-tag { border: 1px solid #ccd8e6; border-radius: 99px; padding: 6px 10px; font-size: 10px; font-weight: 850; letter-spacing: .09em; color: #5d6d83; text-transform: uppercase; }
+    .mail-content { padding: 30px 32px 22px; min-height: 345px; animation: enter .25s ease-out; }
+    .email-kicker { display: block; text-transform: uppercase; letter-spacing: .13em; color: #67788e; font-size: 10px; font-weight: 850; margin-bottom: 12px; }
+    .subject { color: #111d2c; font-size: clamp(21px, 2.6vw, 29px); font-weight: 850; line-height: 1.2; letter-spacing: -.038em; margin: 0 0 20px; outline: none; }
+    .message-meta { display: flex; justify-content: space-between; align-items: start; gap: 14px; margin-bottom: 20px; }
+    .sender-line { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
+    .avatar { display: grid; place-items: center; flex: 0 0 auto; width: 39px; height: 39px; border-radius: 12px; color: #2458a0; background: #e4edfd; font-size: 15px; font-weight: 900; }
+    .from-name { font-size: 14px; line-height: 1.3; font-weight: 800; color: #172940; }
+    .from-email { color: #52677f; overflow-wrap: anywhere; font-size: 12px; margin-top: 3px; }
+    .sent-time { white-space: nowrap; color: #76869b; font-size: 11px; padding-top: 2px; }
+    .email-divider { height: 1px; background: #e4e9f1; margin-bottom: 20px; }
+    .email-body { color: #33455c; font-size: 14px; line-height: 1.75; }
+    .email-body p { margin: 0 0 12px; }
+    .email-body p:last-child { margin-bottom: 0; }
+    .email-cta { display: inline-flex; align-items: center; justify-content: center; margin-top: 17px; padding: 11px 17px; background: #2461b5; color: white; border-radius: 9px; font-size: 12px; font-weight: 800; pointer-events: none; user-select: none; }
+    .email-cta::after { content: '↗'; margin-left: 10px; font-size: 15px; }
+    .email-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8edf3; }
+    .inspect-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #cfdbea; border-radius: 10px; padding: 9px 12px; color: #28568d; font-size: 12px; font-weight: 800; background: white; }
+    .inspect-btn:hover { background: #f3f7fc; border-color: #88afda; }
+    .inspect-btn svg { width: 16px; height: 16px; }
+    .inspect-btn[aria-expanded="true"] { background: #edf5ff; border-color: #73a8e7; }
+    .inspect-helper { text-align: right; color: #78889c; font-size: 11px; }
+    .details { display: none; margin-top: 13px; background: #f0f5fb; border: 1px solid #d5e3f0; border-radius: 11px; padding: 15px 17px; animation: enter .2s ease; }
+    .details.visible { display: block; }
+    .detail-row { display: grid; grid-template-columns: 102px minmax(0,1fr); gap: 10px; font-size: 12px; margin-bottom: 8px; }
+    .detail-row:last-child { margin-bottom: 0; }
+    .detail-label { color: #6a7d93; font-weight: 800; }
+    .detail-value { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; font-weight: 650; color: #264666; overflow-wrap: anywhere; }
+    .action-area { background: #eff3fa; border-top: 1px solid #e3e8f1; padding: 24px 32px 28px; }
+    .question { color: #1c2c41; font-size: 17px; font-weight: 850; letter-spacing: -.025em; margin: 0 0 13px; }
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .choice { display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid transparent; border-radius: 13px; min-height: 53px; padding: 12px; font-size: 13px; font-weight: 850; transition: transform .15s, filter .15s; }
+    .choice:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(.98); }
+    .choice:disabled { opacity: .52; cursor: default; }
+    .choice svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .choice-routine { background: white; border-color: #cad7e4; color: #223d5b; }
+    .choice-phish { background: var(--yellow); border-color: var(--yellow); color: #121a26; }
+    .choice.selected { opacity: 1; box-shadow: inset 0 0 0 2px #1c375c; }
+    .feedback { display: none; border-radius: 14px; padding: 18px; margin-top: 18px; animation: enter .25s ease; }
+    .feedback.visible { display: block; }
+    .feedback.correct { color: #11483e; background: #d9f8ee; border: 1px solid #a8e8d6; }
+    .feedback.incorrect { color: #642c41; background: #ffe5ed; border: 1px solid #ffc3d5; }
+    .feedback-top { display: flex; gap: 10px; align-items: center; }
+    .feedback-mark { display: grid; place-items: center; font-size: 15px; font-weight: 900; width: 29px; height: 29px; border-radius: 50%; background: rgba(255,255,255,.75); }
+    .feedback h3 { margin: 0; font-size: 16px; font-weight: 900; }
+    .feedback p { margin: 10px 0 0; font-size: 13px; line-height: 1.65; }
+    .clue-list { padding-left: 19px; margin: 12px 0 0; font-size: 12px; line-height: 1.7; }
+    .feedback-footer { margin-top: 16px; display: flex; align-items: center; justify-content: flex-end; }
+    .next-btn, .restart-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: none; border-radius: 10px; background: #111e30; color: white; padding: 12px 18px; font-size: 13px; font-weight: 850; }
+    .next-btn:hover, .restart-btn:hover { background: #29466a; }
+    .completion { display: none; text-align: center; padding: 53px 30px 61px; background: white; color: #15263a; }
+    .completion.visible { display: block; animation: enter .3s ease; }
+    .completion-icon { display: grid; place-items: center; margin: 0 auto 16px; width: 68px; height: 68px; border-radius: 20px; background: #e2f9f1; color: #139982; font-size: 31px; font-weight: 900; }
+    .completion h2 { font-size: clamp(27px, 4.5vw, 39px); letter-spacing: -.05em; line-height: 1.15; margin: 0 0 12px; }
+    .completion p { max-width: 480px; margin: 0 auto 24px; color: #586c82; font-size: 14px; }
+    .result-number { color: #16355f; font-size: 60px; font-weight: 900; letter-spacing: -.065em; line-height: 1.15; }
+    .result-number small { font-size: 24px; color: #8b9fb2; }
+    .result-caption { margin: 2px 0 23px; color: #687c92; font-size: 12px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+    .review { text-align: left; max-width: 480px; margin: 0 auto 23px; background: #f1f6fc; padding: 20px 23px; border-radius: 16px; }
+    .review strong { font-size: 13px; }
+    .review ul { margin: 9px 0 0; padding-left: 19px; color: #52677d; font-size: 12px; line-height: 1.8; }
+    .help-banner { display: flex; align-items: flex-start; gap: 17px; margin-top: 22px; padding: 23px 26px; border: 1px solid #44628f; border-radius: var(--radius); background: linear-gradient(115deg, #173c7a, #132e59); box-shadow: 0 12px 35px rgba(0,0,0,.12); }
+    .help-icon { flex: 0 0 43px; display: grid; place-items: center; width: 43px; height: 43px; border-radius: 13px; background: #ffc338; color: #162337; font-size: 22px; font-weight: 900; }
+    .help-content { min-width: 0; }
+    .help-content h2 { margin: 0 0 5px; font-size: 19px; letter-spacing: -.025em; line-height: 1.2; }
+    .help-content p { color: #d9e5fa; font-size: 13px; margin: 0 0 13px; }
+    .help-contacts { display: flex; flex-wrap: wrap; gap: 9px; }
+    .help-contacts a { display: inline-flex; align-items: center; min-height: 38px; border-radius: 9px; padding: 8px 12px; background: #fff; color: #153768; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; text-decoration: none; }
+    .help-contacts a:hover { background: #ffedb4; }
+    .completion-help { margin: 15px auto 24px !important; max-width: 480px; font-size: 12px !important; }
+    .completion-help a { color: #1556a5; font-weight: 800; overflow-wrap: anywhere; }
+    .footer { padding: 28px 0 45px; display: flex; justify-content: space-between; gap: 18px; align-items: start; color: #91a4be; font-size: 11px; }
+    .footer strong { color: #d2dceb; }
+    .footer a { color: #ffc338; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    [hidden] { display: none !important; }
+    @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 850px) {
+      .hero { margin-top: 50px; }
+      .hero-badge { display: none; }
+      .game-layout { grid-template-columns: 1fr; }
+      .sidebar { display: grid; grid-template-columns: 1fr auto; gap: 8px 25px; padding: 21px 24px; }
+      .sidebar-top { grid-column: 1; }
+      .score-card { grid-column: 2; grid-row: 1; align-self: center; border: 0; display: block; text-align: right; padding: 0; }
+      .score-card span { display: block; }
+      .score-card strong { display: block; margin-top: 4px; }
+      .tip-box { grid-column: 1 / -1; margin-top: 0; display: flex; align-items: center; gap: 14px; padding: 13px 16px; }
+      .tip-box h3 { margin: 0 0 3px; }
+      .tip-icon { flex: 0 0 34px; }
+      .round-label { margin-bottom: 10px; }
+      .progress-track { margin-bottom: 0; }
+    }
+    @media (max-width: 520px) {
+      .container { width: calc(100% - 30px); }
+      .header { padding-top: 20px; }
+      .brand { gap: 9px; }
+      .brand-mark { width: 45px; height: 45px; border-radius: 13px; }
+      .brand-text { font-size: 9px; }
+      .brand-text strong { font-size: 11px; }
+      .site-link { font-size: 10px; padding: 8px 10px; }
+      .hero { margin: 47px 0 28px; }
+      h1 { font-size: clamp(40px, 11vw, 58px); }
+      .hero-description { font-size: 14px; }
+      .sidebar { padding: 17px; border-radius: 17px; }
+      .round-label { font-size: 22px; }
+      .mail-toolbar { padding: 12px 17px; }
+      .simulation-tag { font-size: 9px; padding: 5px 8px; }
+      .mail-content { padding: 24px 20px 21px; }
+      .sent-time { font-size: 10px; }
+      .subject { font-size: 23px; }
+      .action-area { padding: 21px 20px 24px; }
+      .choices { grid-template-columns: 1fr; gap: 9px; }
+      .choice { min-height: 49px; }
+      .email-foot { align-items: start; flex-direction: column; gap: 9px; }
+      .inspect-helper { text-align: left; }
+      .detail-row { grid-template-columns: 1fr; gap: 2px; }
+      .help-banner { padding: 20px 17px; gap: 12px; }
+      .help-icon { flex-basis: 37px; width: 37px; height: 37px; }
+      .help-contacts { flex-direction: column; align-items: stretch; }
+      .footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behaviour: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="container header">
+      <a class="brand" href="https://brunelcs.org/" aria-label="Brunel Cyber Security Society home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9a2 2 0 0 1 4 0v2"/></svg>
+        </span>
+        <span class="brand-text"><strong>BRUNEL CYBER</strong><span>SECURITY SOCIETY</span></span>
+      </a>
+      <a class="site-link" href="https://brunelcs.org/">BRUNELCS.ORG ↗</a>
+    </header>
+
+    <main class="container">
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <div class="eyebrow">Email safety challenge</div>
+          <h1 id="page-title"><span>THINK BEFORE</span><span class="highlight">YOU CLICK.</span></h1>
+          <p class="hero-description">Your inbox is full of opportunities, updates and the occasional trap. Can you tell which emails deserve your trust?</p>
+        </div>
+        <div class="hero-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+          8 emails · 3 minutes · No sign-in
+        </div>
+      </section>
+
+      <div class="game-layout">
+        <aside class="sidebar" aria-label="Game progress and advice">
+          <div class="sidebar-top">
+            <div class="section-label">Your mission</div>
+            <div class="round-label">Spot the phish.</div>
+            <div class="progress-text"><span>Inbox reviewed</span><strong id="progress-label">0 / 8</strong></div>
+            <div class="progress-track" id="progress-track" aria-label="Challenge progress"></div>
+          </div>
+          <div class="score-card"><span>Correct calls</span><strong id="score">0</strong></div>
+          <div class="tip-box">
+            <span class="tip-icon" aria-hidden="true">i</span>
+            <div><h3>Detective's tip</h3><p id="tip-text">Check the actual sender, inspect the destination of a link and look for pressure or unusual requests.</p></div>
+          </div>
+        </aside>
+
+        <section class="game-panel" aria-label="Interactive email challenge">
+          <div class="mail-toolbar">
+            <div class="mail-brand">
+              <span class="mail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg></span>
+              <span>Inbox / Security challenge</span>
+            </div>
+            <span class="simulation-tag">Simulation only</span>
+          </div>
+
+          <div id="game-screen">
+            <div class="mail-content" id="mail-content">
+              <span class="email-kicker" id="email-index">Email 01 of 08</span>
+              <h2 class="subject" id="email-subject" tabindex="-1"></h2>
+              <div class="message-meta">
+                <div class="sender-line">
+                  <span class="avatar" id="sender-avatar" aria-hidden="true">?</span>
+                  <div><div class="from-name" id="sender-name"></div><div class="from-email" id="sender-address"></div></div>
+                </div>
+                <div class="sent-time" id="sent-time"></div>
+              </div>
+              <div class="email-divider"></div>
+              <div class="email-body" id="email-body"></div>
+              <div class="email-foot">
+                <button type="button" class="inspect-btn" id="inspect-btn" aria-expanded="false" aria-controls="message-details">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+                  Inspect email details
+                </button>
+                <span class="inspect-helper">No links in this game are clickable.</span>
+              </div>
+              <div class="details" id="message-details" aria-hidden="true">
+                <div class="detail-row"><span class="detail-label">Reply-to</span><span class="detail-value" id="reply-to"></span></div>
+                <div class="detail-row"><span class="detail-label">Link destination</span><span class="detail-value" id="link-destination"></span></div>
+              </div>
+            </div>
+
+            <div class="action-area">
+              <h3 class="question">What would you do with this email?</h3>
+              <div class="choices" id="choice-buttons">
+                <button type="button" class="choice choice-routine" data-answer="routine">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 12 5 5L20 6"/></svg>
+                  Looks routine
+                </button>
+                <button type="button" class="choice choice-phish" data-answer="phish">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4m0 4h.01"/><path d="M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                  Report phishing
+                </button>
+              </div>
+              <div class="feedback" id="feedback" role="status" aria-live="polite">
+                <div class="feedback-top"><span class="feedback-mark" id="feedback-mark"></span><h3 id="feedback-title"></h3></div>
+                <p id="feedback-description"></p>
+                <ul class="clue-list" id="clue-list"></ul>
+                <div class="feedback-footer"><button class="next-btn" type="button" id="next-btn">Next email <span aria-hidden="true">→</span></button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="completion" id="completion" aria-live="polite">
+            <div class="completion-icon" aria-hidden="true">✓</div>
+            <h2 id="completion-title">Inbox secured!</h2>
+            <p id="completion-description"></p>
+            <div class="result-number"><span id="final-score">0</span><small> / 8</small></div>
+            <div class="result-caption">Emails correctly identified</div>
+            <div class="review">
+              <strong>Before you click, remember:</strong>
+              <ul>
+                <li>Check the sender's full address and the actual link destination.</li>
+                <li>Be wary of pressure, unexpected payments and requests for codes.</li>
+                <li>Go to trusted services yourself rather than following email links.</li>
+                <li>Report suspicious messages using Outlook's Report Phishing feature.</li>
+              </ul>
+            </div>
+            <p class="completion-help">Already clicked a suspicious link, replied or shared information? Contact <a href="mailto:security-operations@brunel.ac.uk">security-operations@brunel.ac.uk</a> or <a href="mailto:studenthub@brunel.ac.uk">studenthub@brunel.ac.uk</a> for support.</p>
+            <button type="button" class="restart-btn" id="restart-btn">Play again ↻</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="help-banner" aria-labelledby="help-title">
+        <span class="help-icon" aria-hidden="true">!</span>
+        <div class="help-content">
+          <h2 id="help-title">Think you have been affected?</h2>
+          <p>If you clicked a suspicious link, replied, shared your details or approved an unexpected sign-in, seek advice promptly. Contact Brunel Security Operations or the Student Hub:</p>
+          <div class="help-contacts">
+            <a href="mailto:security-operations@brunel.ac.uk">security-operations@brunel.ac.uk</a>
+            <a href="mailto:studenthub@brunel.ac.uk">studenthub@brunel.ac.uk</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="container footer">
+      <div><strong>Brunel Cyber Security Society</strong> · Learn it. Spot it. Report it.<br>Educational simulation. Messages, sender details and links are fictional. No data is collected.</div>
+      <div>For suspicious emails, use Outlook's <strong>Report Phishing</strong> feature.</div>
+    </footer>
+  </div>
+
+  <script>
+    // Run the entire phishing training game locally without external libraries or network requests.
+    (() => {
+      const emails = [
+        {
+          subject: 'Exclusive placement offer - response needed today',
+          name: 'Brunel Careers Team', from: 'placements@brunel-career-portal.com',
+          replyTo: 'applications@brunel-career-portal.com',
+          link: 'https://brunel-career-portal.com/student-login',
+          time: '09:14', initials: 'BC',
+          paragraphs: [
+            'Congratulations! You have been shortlisted for a highly paid placement with one of our industry partners.',
+            'To secure your interview, sign in with your university password and complete the form before midnight. Unclaimed places will be released.'
+          ],
+          cta: 'Confirm your placement',
+          answer: 'phish',
+          explanation: 'This message impersonates the careers team and uses a lookalike domain to steer you towards a fake sign-in page.',
+          clues: ['The sender is not at brunel.ac.uk.', 'It asks for your university password through a link.', 'The midnight deadline pressures you into acting quickly.']
+        },
+        {
+          subject: 'CS2603 lab room update for next week',
+          name: 'Computer Science Module Team', from: 'cs2603@brunel.ac.uk',
+          replyTo: 'cs2603@brunel.ac.uk', link: '', time: '10:32', initials: 'CS',
+          paragraphs: [
+            'Hello everyone,',
+            'Next week’s lab will take place in Room 215 instead of Room 207. The timetable will also be updated on Brightspace.',
+            'If you have questions, please raise them in the next lab.'
+          ],
+          cta: '', answer: 'routine',
+          explanation: 'This is a routine academic update. It does not ask you to share credentials, pay money or visit an unfamiliar website.',
+          clues: ['The message is informational rather than urgent.', 'There is no link or unusual request.', 'You can independently confirm the change through Brightspace.']
+        },
+        {
+          subject: 'IMPORTANT: Your Brightspace access will expire',
+          name: 'Brightspace Support', from: 'notifications@brightspace-account-support.net',
+          replyTo: 'service@brightspace-account-support.net',
+          link: 'https://login.brunel.ac.uk.account-check.example/verify',
+          time: '08:07', initials: 'BS',
+          paragraphs: [
+            'Dear student,',
+            'We detected a problem with your learning account. Your Brightspace access will be disabled within 60 minutes unless you verify your identity.',
+            'Use the button below to avoid losing access to your assessments.'
+          ],
+          cta: 'Restore access', answer: 'phish',
+          explanation: 'The message creates panic and sends you to a misleading link. A familiar university name inside a URL does not make the destination safe.',
+          clues: ['The sender uses an unrelated support domain.', 'The actual link ends in account-check.example, not brunel.ac.uk.', 'The threat of losing access within an hour is a pressure tactic.']
+        },
+        {
+          subject: 'Library opening hours this weekend',
+          name: 'Brunel Library', from: 'library@brunel.ac.uk',
+          replyTo: 'library@brunel.ac.uk', link: '', time: '11:46', initials: 'BL',
+          paragraphs: [
+            'Hello,',
+            'Please note that the library will open later than usual this Sunday due to scheduled building maintenance.',
+            'Up-to-date opening hours are available through the university’s official library pages. Thank you for your understanding.'
+          ],
+          cta: '', answer: 'routine',
+          explanation: 'This is a plausible service notice with no request to sign in, transfer money or open an attachment.',
+          clues: ['It makes no request for sensitive information.', 'There is no unfamiliar link to follow.', 'Opening hours can be independently checked on the university website.']
+        },
+        {
+          subject: 'Student fee refund approved - provide your bank details',
+          name: 'Student Finance Office', from: 'student-finance@brunel.ac.uk',
+          replyTo: 'refunds@brunel-payments-help.co.uk', link: '', time: '14:03', initials: 'SF',
+          paragraphs: [
+            'Good news! You have been approved for a partial tuition fee refund.',
+            'Reply to this email with your full bank card details and the one-time security code sent to your phone so that we can release your funds today.'
+          ],
+          cta: '', answer: 'phish',
+          explanation: 'A legitimate-looking From address is not proof of authenticity. This email requests sensitive payment information and redirects replies to an unrelated address.',
+          clues: ['The Reply-to address does not match the apparent university sender.', 'It asks for full card details and a one-time security code.', 'Sender addresses and branding can be spoofed.']
+        },
+        {
+          subject: 'Cyber Society workshop details for Friday',
+          name: 'Brunel Cyber Security Society', from: 'events@brunelcs.org',
+          replyTo: 'events@brunelcs.org', link: '', time: '16:20', initials: 'CS',
+          paragraphs: [
+            'Hi everyone,',
+            'Our introductory capture-the-flag workshop is scheduled for Friday afternoon. Bring your laptop if you would like to take part.',
+            'The event details will also be posted through our usual society channels. See you there!'
+          ],
+          cta: '', answer: 'routine',
+          explanation: 'This is a low-risk informational invitation. If the event is unexpected, checking the society’s usual channels is still sensible.',
+          clues: ['There are no password, code or payment requests.', 'It suggests checking the event through a separate, familiar channel.', 'An unexpected email should still be verified independently.']
+        },
+        {
+          subject: 'A lecturer shared an important document with you',
+          name: 'Module Lecturer', from: 'lecturer@brunel.ac.uk',
+          replyTo: 'lecturer@brunel.ac.uk',
+          link: 'https://microsoft365-document-access.co.uk/brunel',
+          time: '12:15', initials: 'ML',
+          paragraphs: [
+            'I have shared the updated assignment marking scheme with you.',
+            'You must open the secure document link and log in with your Microsoft 365 credentials to read the file.'
+          ],
+          cta: 'Open shared document', answer: 'phish',
+          explanation: 'Even when a message appears to come from someone you know, the destination matters. The document link is hosted on an unrelated domain.',
+          clues: ['The link is not on a Microsoft or Brunel-controlled domain.', 'An email account could be compromised or a From address spoofed.', 'Open your usual document service directly to check whether a file was shared.']
+        },
+        {
+          subject: 'Action required: Approve your pending sign-in',
+          name: 'University Account Security', from: 'security@brunel-ac-uk.net',
+          replyTo: 'security@brunel-ac-uk.net', link: '', time: '17:51', initials: 'IT',
+          paragraphs: [
+            'Your university account requires immediate verification.',
+            'You may receive a Microsoft Authenticator notification shortly. Please approve the sign-in request even if you did not initiate it, otherwise your account will be restricted.'
+          ],
+          cta: '', answer: 'phish',
+          explanation: 'Never approve a sign-in or MFA request that you did not initiate. This may be an attempt to gain access using a stolen password.',
+          clues: ['The sender uses a lookalike address, not brunel.ac.uk.', 'It tells you to approve an unexpected authentication prompt.', 'The threat of account restriction is meant to override your judgement.']
+        }
+      ];
+
+      const $ = (id) => document.getElementById(id);
+      const choiceButtons = [...document.querySelectorAll('[data-answer]')];
+      const state = { index: 0, answers: [], revealed: false };
+      const tips = [
+        'Check the actual sender, inspect the destination of a link and look for pressure or unusual requests.',
+        'A believable display name does not make an email genuine. Check the full sender address.',
+        'The real domain is not just any familiar name that appears somewhere in a web address.',
+        'Even an email with no links can be malicious if it asks for secrets or one-time codes.',
+        'A request to approve an MFA notification you did not start is a major warning sign.'
+      ];
+
+      function renderProgress() {
+        const track = $('progress-track');
+        track.replaceChildren();
+        emails.forEach((_, index) => {
+          const segment = document.createElement('span');
+          segment.className = 'progress-segment';
+          if (index < state.answers.length) segment.classList.add(state.answers[index] ? 'done' : 'missed');
+          else if (index === state.index && state.index < emails.length) segment.classList.add('current');
+          track.appendChild(segment);
+        });
+        const correct = state.answers.filter(Boolean).length;
+        $('score').textContent = String(correct);
+        $('progress-label').textContent = `${state.answers.length} / ${emails.length}`;
+        $('tip-text').textContent = tips[Math.min(state.index, tips.length - 1)];
+      }
+
+      function renderEmail() {
+        const email = emails[state.index];
+        state.revealed = false;
+        $('email-index').textContent = `EMAIL ${String(state.index + 1).padStart(2, '0')} OF ${String(emails.length).padStart(2, '0')}`;
+        $('email-subject').textContent = email.subject;
+        $('sender-avatar').textContent = email.initials;
+        $('sender-name').textContent = email.name;
+        $('sender-address').textContent = `<${email.from}>`;
+        $('sent-time').textContent = `Today, ${email.time}`;
+        $('reply-to').textContent = email.replyTo;
+        $('link-destination').textContent = email.link || 'No link in this message';
+        const body = $('email-body');
+        body.replaceChildren();
+        email.paragraphs.forEach((paragraph) => {
+          const p = document.createElement('p');
+          p.textContent = paragraph;
+          body.appendChild(p);
+        });
+        if (email.cta) {
+          const cta = document.createElement('span');
+          cta.className = 'email-cta';
+          cta.textContent = email.cta;
+          body.appendChild(cta);
+        }
+        $('inspect-btn').setAttribute('aria-expanded', 'false');
+        $('message-details').classList.remove('visible');
+        $('message-details').setAttribute('aria-hidden', 'true');
+        $('feedback').className = 'feedback';
+        choiceButtons.forEach((button) => { button.disabled = false; button.classList.remove('selected'); });
+        renderProgress();
+      }
+
+      function revealDetails() {
+        state.revealed = !state.revealed;
+        $('inspect-btn').setAttribute('aria-expanded', String(state.revealed));
+        $('message-details').classList.toggle('visible', state.revealed);
+        $('message-details').setAttribute('aria-hidden', String(!state.revealed));
+      }
+
+      function answer(choice) {
+        if (state.answers.length !== state.index) return;
+        const email = emails[state.index];
+        const correct = choice === email.answer;
+        state.answers.push(correct);
+        choiceButtons.forEach((button) => {
+          button.disabled = true;
+          button.classList.toggle('selected', button.dataset.answer === choice);
+        });
+        const feedback = $('feedback');
+        feedback.className = `feedback visible ${correct ? 'correct' : 'incorrect'}`;
+        $('feedback-mark').textContent = correct ? '✓' : '!';
+        $('feedback-title').textContent = correct ? 'Good call!' : 'Not quite. Here is what to watch for.';
+        $('feedback-description').textContent = `${email.answer === 'phish' ? 'This is a phishing attempt.' : 'This looks like a routine email in this simulation.'} ${email.explanation}`;
+        const clues = $('clue-list');
+        clues.replaceChildren();
+        email.clues.forEach((clue) => {
+          const li = document.createElement('li');
+          li.textContent = clue;
+          clues.appendChild(li);
+        });
+        $('next-btn').textContent = state.index === emails.length - 1 ? 'See my results →' : 'Next email →';
+        renderProgress();
+      }
+
+      function complete() {
+        $('game-screen').hidden = true;
+        $('completion').classList.add('visible');
+        const correct = state.answers.filter(Boolean).length;
+        $('final-score').textContent = String(correct);
+        $('completion-title').textContent = correct === emails.length ? 'Perfect detection!' : correct >= 6 ? 'Great detective work!' : correct >= 4 ? 'You are getting sharper.' : 'Every phish teaches a lesson.';
+        $('completion-description').textContent = correct === emails.length
+          ? 'You spotted every suspicious message. Keep checking carefully in real life too.'
+          : `You correctly identified ${correct} of ${emails.length} emails. Take these habits into your real inbox, and try again to sharpen your instincts.`;
+        renderProgress();
+      }
+
+      function next() {
+        if (state.answers.length !== state.index + 1) return;
+        if (state.index === emails.length - 1) { complete(); return; }
+        state.index += 1;
+        renderEmail();
+        $('email-subject').focus({ preventScroll: true });
+      }
+
+      function restart() {
+        state.index = 0;
+        state.answers = [];
+        state.revealed = false;
+        $('completion').classList.remove('visible');
+        $('game-screen').hidden = false;
+        renderEmail();
+        $('email-subject').focus({ preventScroll: true });
+      }
+
+      $('inspect-btn').addEventListener('click', revealDetails);
+      choiceButtons.forEach((button) => button.addEventListener('click', () => answer(button.dataset.answer)));
+      $('next-btn').addEventListener('click', next);
+      $('restart-btn').addEventListener('click', restart);
+      renderEmail();
+    })();
+  </script>
+</body>
+</html>
