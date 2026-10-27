@@ -37,8 +37,7 @@ Use Outlook's **Report Phishing** feature to report a genuine suspicious email. 
 
 If you have clicked a suspicious link, replied, shared information or approved an unexpected sign-in, seek advice promptly:
 
-- [security-operations@brunel.ac.uk](mailto:security-operations@brunel.ac.uk)
-- [studenthub@brunel.ac.uk](mailto:studenthub@brunel.ac.uk)
+- [cyber@brunel.ac.uk](mailto:cyber@brunel.ac.uk)
 
 ## Disclaimer
 
